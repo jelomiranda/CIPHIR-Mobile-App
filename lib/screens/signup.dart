@@ -32,10 +32,10 @@ class _SignupState extends State<Signup> {
       // Proceed with registration if all fields are valid
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Center(
+          content: const Center(
             child: Text(
               'Successfully registered!',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           backgroundColor: Colors.green,

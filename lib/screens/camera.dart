@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // For using File
 
 class Camera extends StatefulWidget {
+  const Camera({super.key});
+
   @override
   _CameraState createState() => _CameraState();
 }
@@ -29,7 +31,7 @@ class _CameraState extends State<Camera> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -68,7 +70,7 @@ class _CameraState extends State<Camera> {
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'Tap the button below to take a photo.',
                       style: TextStyle(
@@ -95,7 +97,7 @@ class _CameraState extends State<Camera> {
             child: FloatingActionButton(
               onPressed: _takePhoto, // Opens the camera
               backgroundColor: Colors.red,
-              child: Icon(Icons.camera_alt, size: 30),
+              child: const Icon(Icons.camera_alt, size: 30),
             ),
           ),
         ],

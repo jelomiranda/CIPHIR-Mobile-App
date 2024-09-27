@@ -63,7 +63,7 @@ class Home extends StatelessWidget {
                     color: hexStringToColor("e74c3c"),
                     onTap: () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Camera()));
+                          MaterialPageRoute(builder: (context) => const Camera()));
                     },
                   ),
                   buildMenuItem(
@@ -82,7 +82,7 @@ class Home extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => Notifications()));
+                              builder: (context) => const Notifications()));
                     },
                   ),
                   buildMenuItem(
@@ -119,7 +119,7 @@ class Home extends StatelessWidget {
               color: Colors.grey.withOpacity(0.3),
               spreadRadius: 3,
               blurRadius: 5,
-              offset: Offset(0, 3), // changes position of shadow
+              offset: const Offset(0, 3), // changes position of shadow
             ),
           ],
         ),
@@ -127,7 +127,7 @@ class Home extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(icon, size: 60, color: color), // Custom icon color
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               label,
               style: TextStyle(
