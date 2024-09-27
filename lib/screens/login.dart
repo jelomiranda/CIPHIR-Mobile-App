@@ -1,5 +1,6 @@
 import 'package:ciphir_mobile/backend/LoginService.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Import fluttertoast
 import 'home.dart';
 import 'signup.dart';
 import 'package:ciphir_mobile/utils/color_utils.dart';
@@ -30,6 +31,16 @@ class _LoginState extends State<Login> {
     bool loginSuccess = await _loginService.login(email, password);
 
     if (loginSuccess) {
+      // Show toast on successful login
+      Fluttertoast.showToast(
+        msg: "Login successful!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
       // Navigate to home screen on successful login
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Home()));
