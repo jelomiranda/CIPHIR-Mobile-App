@@ -17,82 +17,95 @@ class _LoginState extends State<Login> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 130.0),
               child: Center(
-                  child: SizedBox(
-                      width: 220,
-                      height: 220,
-                      child: Image.asset('assets/images/mobile_logo.png'))),
+                child: Image.asset(
+                  'assets/images/mobile_logo.png',
+                  width: 220,
+                  height: 220,
+                ),
+              ),
             ),
-            const SizedBox(
-              height: 50,
-            ),
-            Image.asset('assets/images/welcome.png'),
-            const SizedBox(
-              height: 50,
+            Padding(
+              padding: const EdgeInsets.only(top: 60.0, bottom: 40),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/welcome.png',
+                  height: 40,
+                  width: 200,
+                ),
+              ),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
               child: TextField(
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Username',
-                    hintText: 'Username'),
+                  border: OutlineInputBorder(),
+                  labelText: 'Username',
+                  hintText: 'Username',
+                ),
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               child: TextField(
                 obscureText: true,
                 decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Password',
-                    hintText: 'Password'),
+                  border: OutlineInputBorder(),
+                  labelText: 'Password',
+                  hintText: 'Password',
+                ),
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            Container(
-              height: 50,
-              width: 150,
-              decoration: BoxDecoration(
-                  color: hexStringToColor("363333"),
-                  borderRadius: BorderRadius.circular(20)),
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => Home()));
-                },
-                child: const Text(
-                  'LOGIN',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40.0),
+              child: Center(
+                child: Container(
+                  height: 50,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: hexStringToColor("363333"),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Home()));
+                    },
+                    child: const Text(
+                      'LOGIN',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 60,
-            ),
-            TextButton(
-              child: const Text(
-                "Don't have an account yet? Sign up here",
-                style: TextStyle(
-                  color: Color.fromARGB(164, 104, 96, 96),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w300,
-                  decoration: TextDecoration.underline,
+            Center(
+              child: TextButton(
+                child: const Text(
+                  "Don't have an account yet? Sign up here",
+                  style: TextStyle(
+                    color: Color.fromARGB(164, 104, 96, 96),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w300,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const Signup()));
+                },
               ),
-              onPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Signup()));
-              },
-            )
+            ),
           ],
         ),
       ),

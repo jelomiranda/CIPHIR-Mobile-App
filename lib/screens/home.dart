@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ciphir_mobile/screens/camera.dart';
+import 'package:ciphir_mobile/screens/notification.dart';
 import 'package:ciphir_mobile/utils/color_utils.dart';
 
 class Home extends StatelessWidget {
@@ -22,7 +23,8 @@ class Home extends StatelessWidget {
                 // Centering the logo
                 child: Image.asset(
                   'assets/images/ciphir_logo1.png',
-                  height: 180, // Adjust according to your logo's size
+                  height: 180,
+                  width: 380, // Adjust according to your logo's size
                 ),
               ),
             ),
@@ -77,7 +79,10 @@ class Home extends StatelessWidget {
                     label: "NOTIFICATIONS",
                     color: hexStringToColor("f4d03f"),
                     onTap: () {
-                      // Handle Notifications tap
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Notifications()));
                     },
                   ),
                   buildMenuItem(

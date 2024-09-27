@@ -1,103 +1,227 @@
 import 'package:ciphir_mobile/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 
-class Signup extends StatelessWidget {
+class Signup extends StatefulWidget {
   const Signup({super.key});
+
+  @override
+  _SignupState createState() => _SignupState();
+}
+
+class _SignupState extends State<Signup> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _contactNumberController =
+      TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  bool _passwordsMatch = true; // Tracks if passwords match
+
+  // Method to validate the form
+  void _validateForm() {
+    setState(() {
+      _passwordsMatch =
+          _passwordController.text == _confirmPasswordController.text;
+    });
+
+    if (_formKey.currentState?.validate() ?? false) {
+      // Proceed with registration if all fields are valid
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Center(
+            child: Text(
+              'Successfully registered!',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 40),
-          height: MediaQuery.of(context).size.height - 50,
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.only(
-                    top: 100.0, bottom: 70.0), // spacing below the logo.
-                child: Image.asset('assets/images/ciphir_logo1.png'),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
               ),
-              Align(
-                alignment: Alignment.centerLeft,
+              child: IntrinsicHeight(
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 0.0), // spacing below the text.
-                  child: Text(
-                    "FILL OUT THE FOLLOWING DETAILS:",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Form(
+                    key: _formKey, // Attach form key for validation
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const SizedBox(height: 100), // Adds spacing before logo
+
+                        // Logo
+                        Center(
+                          child: Image.asset(
+                            'assets/images/ciphir_logo1.png',
+                            height: 180,
+                            width: 380, // Adjust according to your logo's size
+                          ),
+                        ),
+                        const SizedBox(height: 30), // Adds space after logo
+
+                        // Title
+                        const Text(
+                          "FILL OUT THE FOLLOWING DETAILS:",
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+
+                        const SizedBox(
+                            height: 20), // Adds space before input fields
+
+                        // Input Fields
+                        InputField(
+                          label: "Username",
+                          controller: _usernameController,
+                          validator: (value) =>
+                              value!.isEmpty ? "Username is required" : null,
+                        ),
+                        InputField(
+                          label: "Full Name",
+                          controller: _fullNameController,
+                          validator: (value) =>
+                              value!.isEmpty ? "Full Name is required" : null,
+                        ),
+                        InputField(
+                          label: "Address",
+                          controller: _addressController,
+                          validator: (value) =>
+                              value!.isEmpty ? "Address is required" : null,
+                        ),
+                        InputField(
+                          label: "Contact Number",
+                          controller: _contactNumberController,
+                          keyboardType: TextInputType
+                              .phone, // Brings up the numeric keypad
+                          validator: (value) => value!.isEmpty
+                              ? "Contact Number is required"
+                              : null,
+                        ),
+
+                        // Password field
+                        InputField(
+                          label: "Password",
+                          controller: _passwordController,
+                          obscureText: true,
+                          validator: (value) =>
+                              value!.isEmpty ? "Password is required" : null,
+                        ),
+
+                        // Confirm Password field
+                        InputField(
+                          label: "Confirm Password",
+                          controller: _confirmPasswordController,
+                          obscureText: true,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return "Confirm Password is required";
+                            }
+                            return _passwordsMatch
+                                ? null
+                                : "Passwords do not match";
+                          },
+                        ),
+
+                        const SizedBox(height: 30), // Space before the button
+
+                        // Register Button
+                        Center(
+                          child: MaterialButton(
+                            minWidth: 150,
+                            height: 53,
+                            onPressed: _validateForm, // Validation on click
+                            color: hexStringToColor("243464"),
+                            elevation: 9,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const Spacer(), // This spacer will push the content up if there is extra space
+                      ],
+                    ),
                   ),
                 ),
               ),
-              Column(
-                children: <Widget>[
-                  inputFile(label: "Username"),
-                  inputFile(label: "Full Name"),
-                  inputFile(label: "Address"),
-                  inputFile(label: "Contact Number"),
-                  inputFile(label: "Password", obscureText: true),
-                  inputFile(label: "Confirm Password", obscureText: true),
-                ],
-              ),
-              Center(
-                child: Container(
-                  padding: EdgeInsets.only(top: 20, left: 3),
-                  child: MaterialButton(
-                    minWidth: 150,
-                    height: 53,
-                    onPressed: () {},
-                    color: hexStringToColor("243464"),
-                    elevation: 9,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Text(
-                      "Register",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // You can remove the Row widget if not used
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-// Widget for the text field.
-Widget inputFile({label, obscureText = false}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: <Widget>[
-      SizedBox(
-        height: 8,
-      ),
-      TextField(
+// Widget for input fields.
+class InputField extends StatelessWidget {
+  final String label;
+  final TextEditingController? controller;
+  final bool obscureText;
+  final String? Function(String?)? validator; // Validator function
+  final TextInputType? keyboardType; // Added for numeric keypad
+
+  const InputField({
+    required this.label,
+    this.controller,
+    this.obscureText = false,
+    this.validator,
+    this.keyboardType,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        controller: controller,
         obscureText: obscureText,
+        keyboardType: keyboardType, // Use the passed keyboard type
         decoration: InputDecoration(
           labelText: label,
-          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-          enabledBorder: OutlineInputBorder(
+          contentPadding: const EdgeInsets.symmetric(
+              vertical: 0, horizontal: 10), // Padding inside the text field
+          enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey),
           ),
-          border:
-              OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+          ),
         ),
+        validator: validator, // Attach validator for each input field
       ),
-      SizedBox(
-        height: 8,
-      ),
-    ],
-  );
+    );
+  }
 }
