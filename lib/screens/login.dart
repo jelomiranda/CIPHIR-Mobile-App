@@ -1,7 +1,8 @@
-import 'package:ciphir_mobile/screens/signup.dart';
-import 'package:ciphir_mobile/screens/home.dart';
-import 'package:ciphir_mobile/utils/color_utils.dart';
+import 'package:ciphir_mobile/backend/LoginService.dart';
 import 'package:flutter/material.dart';
+import 'home.dart';
+import 'signup.dart';
+import 'package:ciphir_mobile/utils/color_utils.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -11,6 +12,54 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final LoginService _loginService = LoginService(); // Instantiate the service
+
+  // Method to handle login
+  Future<void> _handleLogin() async {
+    String email = _usernameController.text;
+    String password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage("Please enter email and password");
+      return;
+    }
+
+    // Call login service
+    bool loginSuccess = await _loginService.login(email, password);
+
+    if (loginSuccess) {
+      // Navigate to home screen on successful login
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Home()));
+    } else {
+      // Show error message if login fails
+      _showMessage("Invalid email or password");
+    }
+  }
+
+  // Show message method
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Login Status"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,21 +89,23 @@ class _LoginState extends State<Login> {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
               child: TextField(
-                decoration: InputDecoration(
+                controller: _usernameController,
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Username',
-                  hintText: 'Username',
+                  labelText: 'Email',
+                  hintText: 'Email',
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               child: TextField(
+                controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Password',
                   hintText: 'Password',
@@ -72,12 +123,7 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Home()));
-                    },
+                    onPressed: _handleLogin, // Trigger login
                     child: const Text(
                       'LOGIN',
                       style: TextStyle(
