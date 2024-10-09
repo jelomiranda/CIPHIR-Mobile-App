@@ -1,5 +1,7 @@
 import 'package:ciphir_mobile/backend/LoginService.dart';
+import 'package:ciphir_mobile/screens/login.dart';
 import 'package:flutter/material.dart';
+
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
 
@@ -21,7 +23,8 @@ class _ProfileState extends State<Profile> {
     Map<String, dynamic> userData = getCurrentUser();
     _nameController = TextEditingController(text: userData['fullname'] ?? '');
     _addressController = TextEditingController(text: userData['address'] ?? '');
-    _contactController = TextEditingController(text: userData['contactNumber'] ?? '');
+    _contactController =
+        TextEditingController(text: userData['contactNumber'] ?? '');
     _username = userData['username'] ?? '';
   }
 
@@ -105,7 +108,8 @@ class _ProfileState extends State<Profile> {
                       const SizedBox(height: 10),
                       buildInfoRow('Username:', _username, false),
                       buildEditableInfoRow('Name:', _nameController),
-                      buildEditableInfoRow('Address:', _addressController, isMultiline: true),
+                      buildEditableInfoRow('Address:', _addressController,
+                          isMultiline: true),
                       buildEditableInfoRow('Contact No.:', _contactController),
                       const SizedBox(height: 20),
                       buildActionButton(
@@ -146,7 +150,8 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget buildEditableInfoRow(String label, TextEditingController controller, {bool isMultiline = false}) {
+  Widget buildEditableInfoRow(String label, TextEditingController controller,
+      {bool isMultiline = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -175,9 +180,8 @@ class _ProfileState extends State<Profile> {
                   contentPadding: EdgeInsets.all(8),
                 ),
                 style: TextStyle(
-                  fontSize: 16,
-                  color: _isEditing ? Colors.black : Colors.grey
-                ),
+                    fontSize: 16,
+                    color: _isEditing ? Colors.black : Colors.grey),
               ),
             ),
           ),
@@ -229,6 +233,7 @@ class _ProfileState extends State<Profile> {
 
   void _saveChanges() async {
     Map<String, dynamic> updatedInfo = {
+      'username': _username, // Ensure you're sending the username
       'fullname': _nameController.text,
       'address': _addressController.text,
       'contactNumber': _contactController.text,
@@ -247,15 +252,19 @@ class _ProfileState extends State<Profile> {
   }
 
   void _showChangePasswordDialog(BuildContext context) {
-    final TextEditingController _oldPasswordController = TextEditingController();
-    final TextEditingController _newPasswordController = TextEditingController();
-    final TextEditingController _confirmPasswordController = TextEditingController();
+    final TextEditingController _oldPasswordController =
+        TextEditingController();
+    final TextEditingController _newPasswordController =
+        TextEditingController();
+    final TextEditingController _confirmPasswordController =
+        TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
           title: const Text("Change Password"),
           content: SingleChildScrollView(
             child: Column(
@@ -294,11 +303,13 @@ class _ProfileState extends State<Profile> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
               ),
               child: const Text("Save"),
               onPressed: () async {
-                if (_newPasswordController.text != _confirmPasswordController.text) {
+                if (_newPasswordController.text !=
+                    _confirmPasswordController.text) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('New passwords do not match')),
                   );
@@ -311,7 +322,8 @@ class _ProfileState extends State<Profile> {
                 Navigator.of(context).pop();
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Password changed successfully')),
+                    const SnackBar(
+                        content: Text('Password changed successfully')),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

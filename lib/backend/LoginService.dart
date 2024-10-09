@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 Map<String, dynamic> currentUser = {};
 
 class LoginService {
-  static const String baseUrl = 'https://darkgoldenrod-goose-321756.hostingersite.com';
+  static const String baseUrl =
+      'https://darkgoldenrod-goose-321756.hostingersite.com';
 
   // Login method to authenticate users via the PHP endpoint
   Future<bool> login(String username, String password) async {
@@ -51,7 +52,8 @@ class LoginService {
 
   // Method to update user information
   Future<bool> updateUserInfo(Map<String, dynamic> updatedInfo) async {
-    final String url = '$baseUrl/update_user.php'; // Assuming you have this endpoint
+    final String url =
+        '$baseUrl/update_user.php'; // Assuming you have this endpoint
 
     try {
       final response = await http.post(
@@ -80,7 +82,8 @@ class LoginService {
 
   // Method to change password
   Future<bool> changePassword(String oldPassword, String newPassword) async {
-    final String url = '$baseUrl/change_password.php'; // Assuming you have this endpoint
+    final String url =
+        '$baseUrl/change_password.php'; // Assuming you have this endpoint
 
     try {
       final response = await http.post(
