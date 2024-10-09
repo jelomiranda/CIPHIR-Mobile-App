@@ -1,20 +1,37 @@
+import 'package:ciphir_mobile/backend/LoginService.dart';
 import 'package:flutter/material.dart';
-
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  const Profile({Key? key}) : super(key: key);
 
   @override
   _ProfileState createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
-  bool _isEditing = false; // Track whether the user is in edit mode
-  final TextEditingController _nameController =
-      TextEditingController(text: 'Jelo Miranda');
-  final TextEditingController _addressController =
-      TextEditingController(text: 'Sta Cruz Proper St., Sta Cruz, Naga City');
-  final TextEditingController _contactController =
-      TextEditingController(text: '0919332502');
+  bool _isEditing = false;
+  late TextEditingController _nameController;
+  late TextEditingController _addressController;
+  late TextEditingController _contactController;
+  late String _username;
+  final LoginService _loginService = LoginService();
+
+  @override
+  void initState() {
+    super.initState();
+    Map<String, dynamic> userData = getCurrentUser();
+    _nameController = TextEditingController(text: userData['fullname'] ?? '');
+    _addressController = TextEditingController(text: userData['address'] ?? '');
+    _contactController = TextEditingController(text: userData['contactNumber'] ?? '');
+    _username = userData['username'] ?? '';
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _contactController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +41,7 @@ class _ProfileState extends State<Profile> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // Back button functionality
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
       ),
@@ -39,21 +54,19 @@ class _ProfileState extends State<Profile> {
               Center(
                 child: Image.asset(
                   'assets/images/ciphir_logo2.png',
-                  height: 150, // Ensure full logo height
+                  height: 150,
                   fit: BoxFit.contain,
                 ),
               ),
-
               const SizedBox(height: 5),
               const Divider(thickness: 1),
-              const SizedBox(height: 20), // Add space between logo and title
-
+              const SizedBox(height: 20),
               const Text(
                 'USER INFORMATION',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF243464), // Dark Blue Color
+                  color: Color(0xFF243464),
                 ),
               ),
               const SizedBox(height: 20),
@@ -74,17 +87,14 @@ class _ProfileState extends State<Profile> {
                     ],
                   ),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center, // Center aligns the content
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Profile Icon
                       CircleAvatar(
                         radius: 40,
                         backgroundColor: Colors.grey.shade300,
                         child: Icon(Icons.person, size: 50, color: Colors.grey),
                       ),
                       const SizedBox(height: 10),
-                      // Profile Information
                       const Text(
                         'Profile Information',
                         style: TextStyle(
@@ -93,19 +103,19 @@ class _ProfileState extends State<Profile> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      buildInfoRow('Username:', 'jelmir13', false),
+                      buildInfoRow('Username:', _username, false),
                       buildEditableInfoRow('Name:', _nameController),
-                      buildEditableInfoRow('Address:', _addressController,
-                          isMultiline: true), // Multiline address field
+                      buildEditableInfoRow('Address:', _addressController, isMultiline: true),
                       buildEditableInfoRow('Contact No.:', _contactController),
                       const SizedBox(height: 20),
-
-                      // Buttons: Edit, Change Password, and Logout
                       buildActionButton(
                         label: _isEditing ? 'SAVE CHANGES' : 'EDIT',
                         color: Colors.blue,
                         onPressed: () {
                           setState(() {
+                            if (_isEditing) {
+                              _saveChanges();
+                            }
                             _isEditing = !_isEditing;
                           });
                         },
@@ -114,16 +124,15 @@ class _ProfileState extends State<Profile> {
                       buildActionButton(
                         label: 'CHANGE PASSWORD',
                         color: Colors.orange,
-                        onPressed: () {
-                          _showChangePasswordDialog(context);
-                        },
+                        onPressed: () => _showChangePasswordDialog(context),
                       ),
                       const SizedBox(height: 10),
                       buildActionButton(
                         label: 'LOGOUT',
                         color: Colors.red,
                         onPressed: () {
-                          // Handle Logout action
+                          clearCurrentUser();
+                          Navigator.pushReplacementNamed(context, '/login');
                         },
                       ),
                     ],
@@ -137,9 +146,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // Widget to create editable rows of information
-  Widget buildEditableInfoRow(String label, TextEditingController controller,
-      {bool isMultiline = false}) {
+  Widget buildEditableInfoRow(String label, TextEditingController controller, {bool isMultiline = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -154,23 +161,23 @@ class _ProfileState extends State<Profile> {
               decoration: BoxDecoration(
                 border: Border.all(
                   color: _isEditing ? Colors.blue : Colors.transparent,
-                  width: 0.8, // Adds a border to indicate the field is editable
+                  width: 0.8,
                 ),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: TextFormField(
                 controller: controller,
-                enabled: _isEditing, // Enable the text field only in edit mode
+                enabled: _isEditing,
                 textAlign: TextAlign.end,
-                maxLines:
-                    isMultiline ? null : 1, // Support multiline if specified
+                maxLines: isMultiline ? null : 1,
                 decoration: const InputDecoration(
-                  border: InputBorder.none, // No internal border
-                  contentPadding: EdgeInsets.all(8), // Adjust padding
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8),
                 ),
                 style: TextStyle(
-                    fontSize: 16,
-                    color: _isEditing ? Colors.black : Colors.grey),
+                  fontSize: 16,
+                  color: _isEditing ? Colors.black : Colors.grey
+                ),
               ),
             ),
           ),
@@ -179,7 +186,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // Widget to create rows of uneditable information (like Username)
   Widget buildInfoRow(String label, String value, bool editable) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -202,7 +208,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // Button Builder for Edit, Change Password, and Logout
   Widget buildActionButton({
     required String label,
     required Color color,
@@ -222,21 +227,35 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // Dialog for changing the password
+  void _saveChanges() async {
+    Map<String, dynamic> updatedInfo = {
+      'fullname': _nameController.text,
+      'address': _addressController.text,
+      'contactNumber': _contactController.text,
+    };
+
+    bool success = await _loginService.updateUserInfo(updatedInfo);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile')),
+      );
+    }
+  }
+
   void _showChangePasswordDialog(BuildContext context) {
-    final TextEditingController _oldPasswordController =
-        TextEditingController();
-    final TextEditingController _newPasswordController =
-        TextEditingController();
-    final TextEditingController _confirmPasswordController =
-        TextEditingController();
+    final TextEditingController _oldPasswordController = TextEditingController();
+    final TextEditingController _newPasswordController = TextEditingController();
+    final TextEditingController _confirmPasswordController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
           title: const Text("Change Password"),
           content: SingleChildScrollView(
             child: Column(
@@ -274,14 +293,31 @@ class _ProfileState extends State<Profile> {
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.orange,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
+                backgroundColor: Colors.orange,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
               child: const Text("Save"),
-              onPressed: () {
-                // Handle password change logic
-                Navigator.of(context).pop(); // Close the dialog
+              onPressed: () async {
+                if (_newPasswordController.text != _confirmPasswordController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('New passwords do not match')),
+                  );
+                  return;
+                }
+                bool success = await _loginService.changePassword(
+                  _oldPasswordController.text,
+                  _newPasswordController.text,
+                );
+                Navigator.of(context).pop();
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password changed successfully')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to change password')),
+                  );
+                }
               },
             ),
           ],
