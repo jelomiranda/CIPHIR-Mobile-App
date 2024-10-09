@@ -3,18 +3,19 @@ import 'package:http/http.dart' as http; // to make HTTP requests
 
 class LoginService {
   // Login method to authenticate users via the PHP endpoint
-  Future<bool> login(String email, String password) async {
-    const String url = 'https://darkgoldenrod-goose-321756.hostingersite.com/login.php'; // Replace with your endpoint
-    
+  Future<bool> login(String username, String password) async {
+    const String url =
+        'https://darkgoldenrod-goose-321756.hostingersite.com/login.php'; // Replace with your endpoint
+
     try {
-      // Send POST request with email and password
+      // Send POST request with username and password
       final response = await http.post(
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'email': email,
+          'username': username, // Sending 'username' now
           'password': password,
         }),
       );

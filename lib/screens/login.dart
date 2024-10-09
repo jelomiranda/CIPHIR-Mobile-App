@@ -106,8 +106,8 @@ class _LoginState extends State<Login> {
                 controller: _usernameController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Email',
-                  hintText: 'Email',
+                  labelText: 'Username',
+                  hintText: 'Username',
                 ),
               ),
             ),

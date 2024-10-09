@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ciphir_mobile/screens/camera.dart';
 import 'package:ciphir_mobile/screens/notification.dart';
+import 'package:ciphir_mobile/screens/history.dart';
+import 'package:ciphir_mobile/screens/profile.dart';
 import 'package:ciphir_mobile/utils/color_utils.dart';
 
 class Home extends StatelessWidget {
@@ -22,7 +24,7 @@ class Home extends StatelessWidget {
               child: Center(
                 // Centering the logo
                 child: Image.asset(
-                  'assets/images/ciphir_logo1.png',
+                  'assets/images/mobile_logo.png',
                   height: 180,
                   width: 380, // Adjust according to your logo's size
                 ),
@@ -37,7 +39,7 @@ class Home extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft, // Aligns text to the left
                 child: Text(
-                  'Good day, How may we help you today?',
+                  'Hello, how can we assist you?',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -52,6 +54,8 @@ class Home extends StatelessWidget {
               padding: const EdgeInsets.only(top: 1.0, left: 20.0, right: 20.0),
               child: GridView.count(
                 shrinkWrap: true, // So GridView doesn't scroll
+                physics:
+                    const NeverScrollableScrollPhysics(), // Disables scrolling
                 crossAxisCount: 2, // 2 buttons per row
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
@@ -62,8 +66,10 @@ class Home extends StatelessWidget {
                     label: "REPORT ISSUE",
                     color: hexStringToColor("e74c3c"),
                     onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => const Camera()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Camera()));
                     },
                   ),
                   buildMenuItem(
@@ -71,7 +77,10 @@ class Home extends StatelessWidget {
                     label: "REPORT HISTORY",
                     color: hexStringToColor("229954"),
                     onTap: () {
-                      // Handle Report History tap
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ReportHistory()));
                     },
                   ),
                   buildMenuItem(
@@ -90,7 +99,8 @@ class Home extends StatelessWidget {
                     label: "USER PROFILE",
                     color: hexStringToColor("616a6b"),
                     onTap: () {
-                      // Handle User Profile tap
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Profile()));
                     },
                   ),
                 ],

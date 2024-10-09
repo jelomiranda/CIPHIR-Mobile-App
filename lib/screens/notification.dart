@@ -6,22 +6,24 @@ class Notifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy data for notifications
+    // Dummy data for notifications with a "dateReceived" and "timeReceived" field
     final List<Map<String, String>> notifications = [
       {
         "message":
             "Your report has been submitted and will be reviewed shortly. Please wait for further updates.",
-        "reportID": "100006062024",
+        "dateReceived": "06/06/24",
+        "timeReceived": "10:30 AM"
       },
       {
-        "message":
-            "Report_ID: 100005202024 has been resolved. Thank you for your assistance!",
-        "reportID": "100005202024",
+        "message": "Report has been resolved. Thank you for your assistance!",
+        "dateReceived": "05/20/24",
+        "timeReceived": "01:45 PM"
       },
       {
         "message":
             "Your report has been submitted and will be reviewed shortly. Please wait for further updates.",
-        "reportID": "100005202024",
+        "dateReceived": "05/20/24",
+        "timeReceived": "02:00 PM"
       },
     ];
 
@@ -50,6 +52,7 @@ class Notifications extends StatelessWidget {
                   'assets/images/ciphir_logo2.png', // Replace with the actual logo path
                   height: 150,
                 ),
+                const SizedBox(height: 5),
                 const Divider(thickness: 1),
               ],
             ),
@@ -62,7 +65,7 @@ class Notifications extends StatelessWidget {
               child: Text(
                 "NOTIFICATIONS",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF243464), // Custom color
                 ),
@@ -71,23 +74,35 @@ class Notifications extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Notification List
+            // Notification List with a scrollbar
             Expanded(
-              child: ListView.builder(
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final notification = notifications[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildNotificationCard(
-                      context,
-                      notification["message"] ?? "",
-                      notification["reportID"] ?? "",
-                    ),
-                  );
-                },
+              child: Scrollbar(
+                thickness: 4.0,
+                radius: const Radius.circular(10),
+                child: ListView.builder(
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    return Column(
+                      children: [
+                        _buildNotificationCard(
+                          context,
+                          notification["message"] ?? "",
+                          notification["dateReceived"] ?? "",
+                          notification["timeReceived"] ?? "",
+                        ),
+                        if (index != notifications.length - 1)
+                          const SizedBox(
+                              height: 5), // Reduced space between cards
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
+
+            const SizedBox(
+                height: 20), // Extra spacing before the bottom of the screen
           ],
         ),
       ),
@@ -95,25 +110,61 @@ class Notifications extends StatelessWidget {
   }
 
   // Method to build each notification card
-  Widget _buildNotificationCard(
-      BuildContext context, String message, String reportID) {
+  Widget _buildNotificationCard(BuildContext context, String message,
+      String dateReceived, String timeReceived) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: hexStringToColor("879EA6"), // Background color for notification
         borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ], // Subtle shadow for depth
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
+          // Left side for message and date
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Text(
+                      dateReceived,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Text(
+                      timeReceived,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 1),
         ],
       ),
     );
