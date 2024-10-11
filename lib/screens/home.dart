@@ -1,3 +1,4 @@
+import 'package:ciphir_mobile/screens/report.dart';
 import 'package:flutter/material.dart';
 import 'package:ciphir_mobile/screens/camera.dart';
 import 'package:ciphir_mobile/screens/notification.dart';
@@ -69,7 +70,7 @@ class Home extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Camera()));
+                              builder: (context) => const Report()));
                     },
                   ),
                   buildMenuItem(

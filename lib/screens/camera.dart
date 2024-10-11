@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io'; // For using File
+import 'dart:io'; // For handling files
+import 'report.dart'; // Import your Report class
 
 class Camera extends StatefulWidget {
   const Camera({super.key});
@@ -20,6 +21,14 @@ class _CameraState extends State<Camera> {
       setState(() {
         _image = File(image.path); // Storing the image in the _image variable
       });
+      // After capturing the image, navigate to the Report screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              Report(imagePath: image.path), // Pass image path to Report
+        ),
+      );
     }
   }
 
@@ -58,38 +67,87 @@ class _CameraState extends State<Camera> {
 
           const Spacer(), // Pushes content towards the center
 
-          // Framing for the picture or display the captured photo
-          _image == null
-              ? Container(
-                  height: 400,
-                  width: 300,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.blue, // Frame color
-                      width: 5,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
+          // Displaying Photo Guidelines
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Photo Guidelines:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Tap the button below to take a photo.',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Image.file(
-                  _image!, // Display the captured image
-                  height: 350,
-                  width: 250,
-                  fit: BoxFit.cover,
                 ),
+                SizedBox(height: 10),
+                Text(
+                  '1. Ensure good lighting for clear visibility.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '2. Capture the issue and its surrounding area for context.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '3. Take photos from multiple angles, if possible.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '4. Avoid reflections, glare, or obstructions in the photo.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '5. Ensure the photo is not blurry or unclear.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
 
-          const Spacer(), // Pushes content towards the center
+          const SizedBox(height: 20),
+
+          Text(
+            'Examples',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+
+          const SizedBox(height: 20), // Spacing before the example photo
+
+          // Displaying the Example Photo
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Image.asset(
+              'assets/images/sample_photo.jpg', // Replace with the path to your example image
+              height: 300,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          const Spacer(),
+
+          // "Tap the button" text
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: const Text(
+              'Tap the button below to take a photo.',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
 
           // Button to take the photo
           Padding(
