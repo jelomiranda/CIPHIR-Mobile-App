@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+
 // Global variable to store user data
 Map<String, dynamic> currentUser = {};
 
@@ -34,7 +35,10 @@ class LoginService {
             'fullname': jsonResponse['fullname'],
             'address': jsonResponse['address'],
             'contactNumber': jsonResponse['contactNumber'],
+            'resident_id': jsonResponse['resident_id'],
           };
+
+          print("currentuser: ${currentUser}");
           return true; // Login successful
         } else {
           clearCurrentUser();
