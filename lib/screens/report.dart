@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io'; // For handling File
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For encoding JSON
+import 'package:ciphir_mobile/backend/LoginService.dart';
+
+
 
 class Report extends StatefulWidget {
   final String? imagePath; // Add the image path from the camera
@@ -11,26 +16,84 @@ class Report extends StatefulWidget {
 }
 
 class _ReportState extends State<Report> {
+ @override
+
+
   TextEditingController _descriptionController = TextEditingController();
   String? _selectedIssueType;
   String? _selectedInfrastructureType;
   String _location = 'Choose location on the map...';
 
-  List<String> issueTypes = [
-    'Pothole',
-    'Broken Signage',
-    'Flooding',
-    'Fallen Trees'
+  int? _selectedIssueId;
+  int? _selectedInfrastructureId;
+
+  List<Map<String, dynamic>> issueTypes = [
+    {'id': 1, 'type': 'Pothole'},
+    {'id': 2, 'type': 'Cracked Pavement'},
+    {'id': 3, 'type': 'Flooding'},
+    {'id': 4, 'type': 'Faded Lane Marking'},
+    {'id': 5, 'type': 'Broken or Damaged Signage'}
   ];
 
-  List<String> infrastructureTypes = ['Roads', 'Bridges', 'Parks', 'Buildings'];
+  List<Map<String, dynamic>> infrastructureTypes = [
+    {'id': 1, 'type': 'Roads'},
+    {'id': 2, 'type': 'Railways'},
+    {'id': 3, 'type': 'Public Transit System'},
+    {'id': 4, 'type': 'Electric Grids'},
+    {'id': 5, 'type': 'Pipelines'}
+  ];
 
   String? _imagePath; // Create a new mutable variable for imagePath
 
   @override
   void initState() {
     super.initState();
+     print("Current User Data: ${currentUser.toString()}");
     _imagePath = widget.imagePath; // Initialize the imagePath
+  }
+
+  // Function to submit the form data
+  Future<void> submitForm() async {
+    // Check if all fields are filled in
+    if (_selectedIssueId == null || _selectedInfrastructureId == null || _descriptionController.text.isEmpty || _location.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill in all the fields")));
+      return;
+    }
+
+    // Prepare the form data
+    Map<String, dynamic> formData = {
+      'resident_id': currentUser['resident_id'], // Placeholder for the current logged-in resident ID
+      'issue_id': _selectedIssueId,
+      'infrastructure_id': _selectedInfrastructureId,
+      'description': _descriptionController.text,
+      'reportDateTime': DateTime.now().toIso8601String(),
+      'reportPhoto': _imagePath != null ? File(_imagePath!).path.split('/').last : '', // Example file path processing
+      'reportLocation': _location,
+      'reportStatus': 'Pending',
+      'priorityLevel': 'Medium', // You can adjust this based on user input
+    };
+
+    try {
+      var response = await http.post(
+        Uri.parse('https://darkgoldenrod-goose-321756.hostingersite.com/report_issue.php'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(formData),
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Report submitted successfully")));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to submit report")));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error submitting report")));
+      }
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error occurred: $e")));
+    }
   }
 
   @override
@@ -179,18 +242,24 @@ class _ReportState extends State<Report> {
                     ),
                   ],
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedInfrastructureType,
+                child: DropdownButtonFormField<Map<String, dynamic>>(
+                  value: _selectedInfrastructureId != null
+                      ? infrastructureTypes.firstWhere(
+                          (element) => element['id'] == _selectedInfrastructureId,
+                          orElse: () => infrastructureTypes[0],
+                        )
+                      : null,
                   hint: const Text('What type of infrastructure?'),
-                  items: infrastructureTypes.map((String type) {
-                    return DropdownMenuItem<String>(
+                  items: infrastructureTypes.map((Map<String, dynamic> type) {
+                    return DropdownMenuItem<Map<String, dynamic>>(
                       value: type,
-                      child: Text(type),
+                      child: Text(type['type']),
                     );
                   }).toList(),
-                  onChanged: (String? value) {
+                  onChanged: (Map<String, dynamic>? value) {
                     setState(() {
-                      _selectedInfrastructureType = value;
+                      _selectedInfrastructureType = value!['type'];
+                      _selectedInfrastructureId = value['id'];
                     });
                   },
                   decoration: const InputDecoration(
@@ -217,18 +286,24 @@ class _ReportState extends State<Report> {
                     ),
                   ],
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedIssueType,
+                child: DropdownButtonFormField<Map<String, dynamic>>(
+                  value: _selectedIssueId != null
+                      ? issueTypes.firstWhere(
+                          (element) => element['id'] == _selectedIssueId,
+                          orElse: () => issueTypes[0],
+                        )
+                      : null,
                   hint: const Text('What type of issue?'),
-                  items: issueTypes.map((String type) {
-                    return DropdownMenuItem<String>(
+                  items: issueTypes.map((Map<String, dynamic> type) {
+                    return DropdownMenuItem<Map<String, dynamic>>(
                       value: type,
-                      child: Text(type),
+                      child: Text(type['type']),
                     );
                   }).toList(),
-                  onChanged: (String? value) {
+                  onChanged: (Map<String, dynamic>? value) {
                     setState(() {
-                      _selectedIssueType = value;
+                      _selectedIssueType = value!['type'];
+                      _selectedIssueId = value['id'];
                     });
                   },
                   decoration: const InputDecoration(
@@ -266,6 +341,7 @@ class _ReportState extends State<Report> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle the submission logic here
+                    submitForm(); // Call the submit form function
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
