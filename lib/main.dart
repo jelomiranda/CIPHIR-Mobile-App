@@ -1,4 +1,5 @@
 import 'package:ciphir_mobile/screens/camera.dart';
+import 'package:ciphir_mobile/screens/home.dart';
 import 'package:ciphir_mobile/screens/login.dart';
 import 'package:ciphir_mobile/screens/profile.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class MainApp extends StatelessWidget {
         '/profile': (context) =>
             const Profile(), // Named route for profile screen
         '/camera': (context) => const Camera(),
+         '/home': (context) => Home(),
       },
       initialRoute: '/login', // Set the initial route to the login screen
     );

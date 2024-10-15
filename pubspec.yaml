@@ -11,8 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   mysql_client: ^0.0.27
-  http: ^0.13.3
   fluttertoast: ^8.2.1
+  http: ^1.2.2
+
 
 dev_dependencies:
   flutter_test:

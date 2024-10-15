@@ -26,6 +26,8 @@ class _ProfileState extends State<Profile> {
     _contactController =
         TextEditingController(text: userData['contactNumber'] ?? '');
     _username = userData['username'] ?? '';
+    
+    print("output${userData}");
   }
 
   @override

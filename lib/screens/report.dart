@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'dart:io'; // For handling File
-import 'package:http/http.dart' as http;
-import 'dart:convert'; // For encoding JSON
-import 'package:ciphir_mobile/backend/LoginService.dart';
-
-
+import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:ciphir_mobile/backend/data_service.dart'; // Import the infrastructure and issue lists
+import 'package:ciphir_mobile/backend/LoginService.dart'; // For accessing currentUser
 
 class Report extends StatefulWidget {
-  final String? imagePath; // Add the image path from the camera
+  final String? imagePath;
 
   const Report({Key? key, this.imagePath}) : super(key: key);
 
@@ -16,83 +17,89 @@ class Report extends StatefulWidget {
 }
 
 class _ReportState extends State<Report> {
- @override
-
-
   TextEditingController _descriptionController = TextEditingController();
-  String? _selectedIssueType;
-  String? _selectedInfrastructureType;
+  String? _selectedInfrastructure;
+  int? _selectedIssue;
+  List<Map<String, dynamic>> _availableIssues = [];
   String _location = 'Choose location on the map...';
-
-  int? _selectedIssueId;
-  int? _selectedInfrastructureId;
-
-  List<Map<String, dynamic>> issueTypes = [
-    {'id': 1, 'type': 'Pothole'},
-    {'id': 2, 'type': 'Cracked Pavement'},
-    {'id': 3, 'type': 'Flooding'},
-    {'id': 4, 'type': 'Faded Lane Marking'},
-    {'id': 5, 'type': 'Broken or Damaged Signage'}
-  ];
-
-  List<Map<String, dynamic>> infrastructureTypes = [
-    {'id': 1, 'type': 'Roads'},
-    {'id': 2, 'type': 'Railways'},
-    {'id': 3, 'type': 'Public Transit System'},
-    {'id': 4, 'type': 'Electric Grids'},
-    {'id': 5, 'type': 'Pipelines'}
-  ];
-
-  String? _imagePath; // Create a new mutable variable for imagePath
+  File? _imageFile; // For the selected image
 
   @override
   void initState() {
     super.initState();
-     print("Current User Data: ${currentUser.toString()}");
-    _imagePath = widget.imagePath; // Initialize the imagePath
   }
 
-  // Function to submit the form data
-  Future<void> submitForm() async {
-    // Check if all fields are filled in
-    if (_selectedIssueId == null || _selectedInfrastructureId == null || _descriptionController.text.isEmpty || _location.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please fill in all the fields")));
-      return;
-    }
+  // Method to fetch issues when infrastructure is selected
+  void _fetchIssuesForInfrastructure(int infrastructureId) {
+    setState(() {
+      _availableIssues = getIssuesForInfrastructure(infrastructureId);
+      _selectedIssue = null; // Reset the issue when infrastructure changes
+    });
+  }
 
-    // Prepare the form data
-    Map<String, dynamic> formData = {
-      'resident_id': currentUser['resident_id'], // Placeholder for the current logged-in resident ID
-      'issue_id': _selectedIssueId,
-      'infrastructure_id': _selectedInfrastructureId,
-      'description': _descriptionController.text,
-      'reportDateTime': DateTime.now().toIso8601String(),
-      'reportPhoto': _imagePath != null ? File(_imagePath!).path.split('/').last : '', // Example file path processing
-      'reportLocation': _location,
-      'reportStatus': 'Pending',
-      'priorityLevel': 'Medium', // You can adjust this based on user input
-    };
-
-    try {
-      var response = await http.post(
-        Uri.parse('https://darkgoldenrod-goose-321756.hostingersite.com/report_issue.php'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(formData),
-      );
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Report submitted successfully")));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to submit report")));
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error submitting report")));
+  // Method to take a photo using the camera
+  Future<void> _takePhoto() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
       }
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error occurred: $e")));
+    });
+  }
+
+  // Method to pick an image from the gallery
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
+      }
+    });
+  }
+
+  // Convert the image to Base64
+  Future<String?> _convertImageToBase64(File? imageFile) async {
+    if (imageFile == null) return null;
+    List<int> imageBytes = await imageFile.readAsBytes();
+    return base64Encode(imageBytes);
+  }
+
+  // Method to submit the report
+  void _submitReport() async {
+    String? base64Image = await _convertImageToBase64(_imageFile);
+
+    if (_selectedInfrastructure != null && _selectedIssue != null) {
+      final data = {
+        'resident_id': currentUser['resident_id'],
+        'infrastructure_id': int.parse(_selectedInfrastructure!), // Convert to int
+        'issue_id': _selectedIssue, // Already int
+        'description': _descriptionController.text,
+        'reportLocation': _location,
+        'reportPhoto': base64Image, // Pass the base64 image if available
+      };
+
+      final response = await DataService.submitReport(data);
+
+      if (response['status'] == 'success') {
+        // Show the toast when the report is successfully submitted
+        Fluttertoast.showToast(
+          msg: "Report successfully submitted!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+
+        // Navigate back to home.dart
+        Navigator.pushNamed(context, '/home');
+      } else {
+        // Handle failure
+        print('Failed to submit report');
+      }
+    } else {
+      print('Please select infrastructure and issue type');
     }
   }
 
@@ -116,12 +123,11 @@ class _ReportState extends State<Report> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Move the logo here instead of the AppBar
               Center(
                 child: Image.asset(
                   'assets/images/ciphir_logo2.png',
-                  height: 150, // Set height to 150 as per your requirement
-                  fit: BoxFit.contain, // Ensures the image fits properly
+                  height: 150,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 5),
@@ -140,19 +146,11 @@ class _ReportState extends State<Report> {
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 20),
-              // Description Box
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: TextField(
                   controller: _descriptionController,
@@ -165,7 +163,6 @@ class _ReportState extends State<Report> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Attachments Section with updated style
               const Text(
                 'Attachments',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -177,21 +174,14 @@ class _ReportState extends State<Report> {
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
-                    if (_imagePath != null)
+                    if (_imageFile != null)
                       Row(
                         children: [
                           Image.file(
-                            File(_imagePath!),
+                            _imageFile!,
                             height: 60,
                             width: 60,
                             fit: BoxFit.cover,
@@ -199,123 +189,88 @@ class _ReportState extends State<Report> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'IMG_492.jpg', // You can replace this with the actual file name
+                              path.basename(_imageFile!.path), // Show the file name
                               style: const TextStyle(fontSize: 14),
                             ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.cancel, color: Colors.red),
                             onPressed: () {
-                              // Remove the attached image
                               setState(() {
-                                _imagePath = null;
+                                _imageFile = null;
                               });
                             },
                           ),
                         ],
                       ),
                     const SizedBox(height: 10),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        // Navigate to camera to add photo
-                        Navigator.pushNamed(context, '/camera');
-                      },
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Add Photo'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: _takePhoto,
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Take Photo'),
+                        ),
+                        const SizedBox(width: 10),
+                        OutlinedButton.icon(
+                          onPressed: _pickImage,
+                          icon: const Icon(Icons.photo_library),
+                          label: const Text('Upload'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
               // Dropdown for Infrastructure Type
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+              DropdownButtonFormField<String>(
+                value: _selectedInfrastructure,
+                hint: const Text('What type of infrastructure?'),
+                items: infrastructureTypes.map((infrastructure) {
+                  return DropdownMenuItem<String>(
+                    value: infrastructure['infrastructure_id'].toString(),
+                    child: Text(infrastructure['infrastructure_type']),
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  setState(() {
+                    _selectedInfrastructure = value;
+                    _fetchIssuesForInfrastructure(int.parse(value!));
+                  });
+                },
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: DropdownButtonFormField<Map<String, dynamic>>(
-                  value: _selectedInfrastructureId != null
-                      ? infrastructureTypes.firstWhere(
-                          (element) => element['id'] == _selectedInfrastructureId,
-                          orElse: () => infrastructureTypes[0],
-                        )
-                      : null,
-                  hint: const Text('What type of infrastructure?'),
-                  items: infrastructureTypes.map((Map<String, dynamic> type) {
-                    return DropdownMenuItem<Map<String, dynamic>>(
-                      value: type,
-                      child: Text(type['type']),
-                    );
-                  }).toList(),
-                  onChanged: (Map<String, dynamic>? value) {
-                    setState(() {
-                      _selectedInfrastructureType = value!['type'];
-                      _selectedInfrastructureId = value['id'];
-                    });
-                  },
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true, // Adds more padding around the text
-                    contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  ),
-                  icon: const Icon(Icons.arrow_drop_down),
-                ),
+                icon: const Icon(Icons.arrow_drop_down),
               ),
               const SizedBox(height: 20),
               // Dropdown for Issue Type
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+              DropdownButtonFormField<int>(
+                value: _selectedIssue,
+                hint: const Text('What type of issue?'),
+                items: _availableIssues.map((issue) {
+                  return DropdownMenuItem<int>(
+                    value: issue['issue_id'],
+                    child: Text(issue['issue_type']),
+                  );
+                }).toList(),
+                onChanged: (int? value) {
+                  setState(() {
+                    _selectedIssue = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: DropdownButtonFormField<Map<String, dynamic>>(
-                  value: _selectedIssueId != null
-                      ? issueTypes.firstWhere(
-                          (element) => element['id'] == _selectedIssueId,
-                          orElse: () => issueTypes[0],
-                        )
-                      : null,
-                  hint: const Text('What type of issue?'),
-                  items: issueTypes.map((Map<String, dynamic> type) {
-                    return DropdownMenuItem<Map<String, dynamic>>(
-                      value: type,
-                      child: Text(type['type']),
-                    );
-                  }).toList(),
-                  onChanged: (Map<String, dynamic>? value) {
-                    setState(() {
-                      _selectedIssueType = value!['type'];
-                      _selectedIssueId = value['id'];
-                    });
-                  },
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  ),
-                  icon: const Icon(Icons.arrow_drop_down),
-                ),
+                icon: const Icon(Icons.arrow_drop_down),
               ),
               const SizedBox(height: 20),
-              // Location Field
               TextFormField(
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
@@ -326,35 +281,26 @@ class _ReportState extends State<Report> {
                   fillColor: Colors.grey[100],
                 ),
                 onTap: () {
-                  // Open a map or location picker (You need to implement this separately)
+                  // Open a map or location picker (optional)
                 },
               ),
               const SizedBox(height: 20),
-              // Map Placeholder (You would use a Google Map plugin here)
               Image.asset(
-                'assets/images/map_placeholder.png', // Dummy image for a map
+                'assets/images/map_placeholder.png',
                 height: 200,
               ),
               const SizedBox(height: 20),
-              // Submit Button
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Handle the submission logic here
-                    submitForm(); // Call the submit form function
-                  },
+                  onPressed: _submitReport,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'SUBMIT',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text('SUBMIT', style: TextStyle(color: Colors.white)),
                 ),
               ),
             ],
