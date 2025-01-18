@@ -25,7 +25,7 @@ class MainApp extends StatelessWidget {
         '/profile': (context) =>
             const Profile(), // Named route for profile screen
         '/camera': (context) => const Camera(),
-         '/home': (context) => Home(),
+        '/home': (context) => Home(),
       },
       initialRoute: '/login', // Set the initial route to the login screen
     );

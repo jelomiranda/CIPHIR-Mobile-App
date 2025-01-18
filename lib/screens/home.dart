@@ -1,6 +1,5 @@
 import 'package:ciphir_mobile/screens/report.dart';
 import 'package:flutter/material.dart';
-import 'package:ciphir_mobile/screens/camera.dart';
 import 'package:ciphir_mobile/screens/notification.dart';
 import 'package:ciphir_mobile/screens/history.dart';
 import 'package:ciphir_mobile/screens/profile.dart';
@@ -31,22 +30,31 @@ class Home extends StatelessWidget {
                 ),
               ),
             ),
-
             // Greeting Text
             Padding(
               padding: const EdgeInsets.only(
                   left: 20.0,
                   top: 50.0), // Adds left padding for left alignment
-              child: Align(
-                alignment: Alignment.centerLeft, // Aligns text to the left
-                child: Text(
-                  'Hello, how can we assist you?',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: hexStringToColor("243464"),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello,',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Welcome back!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -70,7 +78,8 @@ class Home extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Report()));
+                              builder: (context) =>
+                                  Report(imagePath: 'path/to/image')));
                     },
                   ),
                   buildMenuItem(

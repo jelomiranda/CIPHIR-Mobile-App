@@ -1,5 +1,4 @@
 import 'package:ciphir_mobile/backend/LoginService.dart';
-import 'package:ciphir_mobile/screens/login.dart';
 import 'package:flutter/material.dart';
 
 class Profile extends StatefulWidget {
@@ -26,8 +25,6 @@ class _ProfileState extends State<Profile> {
     _contactController =
         TextEditingController(text: userData['contactNumber'] ?? '');
     _username = userData['username'] ?? '';
-    
-    print("output${userData}");
   }
 
   @override
@@ -97,7 +94,8 @@ class _ProfileState extends State<Profile> {
                       CircleAvatar(
                         radius: 40,
                         backgroundColor: Colors.grey.shade300,
-                        child: Icon(Icons.person, size: 50, color: Colors.grey),
+                        child: const Icon(Icons.person,
+                            size: 50, color: Colors.grey),
                       ),
                       const SizedBox(height: 10),
                       const Text(
@@ -108,7 +106,7 @@ class _ProfileState extends State<Profile> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      buildInfoRow('Username:', _username, false),
+                      buildInfoRow('Username:', _username),
                       buildEditableInfoRow('Name:', _nameController),
                       buildEditableInfoRow('Address:', _addressController,
                           isMultiline: true),
@@ -182,8 +180,9 @@ class _ProfileState extends State<Profile> {
                   contentPadding: EdgeInsets.all(8),
                 ),
                 style: TextStyle(
-                    fontSize: 16,
-                    color: _isEditing ? Colors.black : Colors.grey),
+                  fontSize: 16,
+                  color: _isEditing ? Colors.black : Colors.grey,
+                ),
               ),
             ),
           ),
@@ -192,7 +191,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget buildInfoRow(String label, String value, bool editable) {
+  Widget buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -235,7 +234,7 @@ class _ProfileState extends State<Profile> {
 
   void _saveChanges() async {
     Map<String, dynamic> updatedInfo = {
-      'username': _username, // Ensure you're sending the username
+      'username': _username,
       'fullname': _nameController.text,
       'address': _addressController.text,
       'contactNumber': _contactController.text,
@@ -244,11 +243,11 @@ class _ProfileState extends State<Profile> {
     bool success = await _loginService.updateUserInfo(updatedInfo);
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile updated successfully')),
+        const SnackBar(content: Text('Profile updated successfully')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile')),
+        const SnackBar(content: Text('Failed to update profile')),
       );
     }
   }

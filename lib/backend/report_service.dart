@@ -24,7 +24,8 @@ class ReportService {
 
     // Make POST request to upload image to the server
     var response = await http.post(
-      Uri.parse('https://darkgoldenrod-goose-321756.hostingersite.com/upload_image.php'),
+      Uri.parse(
+          'https://darkgoldenrod-goose-321756.hostingersite.com/upload_image.php'),
       body: data,
     );
 
@@ -43,10 +44,12 @@ class ReportService {
     }
   }
 
-  // Submit report with image path
-  static Future<Map<String, dynamic>> submitReport(Map<String, dynamic> reportData) async {
+  // Submit report with image path and location
+  static Future<Map<String, dynamic>> submitReport(
+      Map<String, dynamic> reportData) async {
     var response = await http.post(
-      Uri.parse('https://darkgoldenrod-goose-321756.hostingersite.com/report_issue.php'),
+      Uri.parse(
+          'https://darkgoldenrod-goose-321756.hostingersite.com/report_issue.php'),
       body: jsonEncode(reportData),
       headers: {"Content-Type": "application/json"},
     );
