@@ -23,7 +23,7 @@ class _LoginState extends State<Login> {
     String password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      _showMessage("Please enter email and password");
+      _showMessage("Please enter username and password");
       return;
     }
 

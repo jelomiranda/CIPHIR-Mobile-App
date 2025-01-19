@@ -14,20 +14,18 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CIPHIR App', // You can add a title for the app
+      title: 'CIPHIR App',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Add a theme if needed
+        primarySwatch: Colors.blue,
       ),
-      debugShowCheckedModeBanner: false, // Remove debug symbol
-      // Define named routes
+      debugShowCheckedModeBanner: false,
       routes: {
-        '/login': (context) => const Login(), // Named route for login screen
-        '/profile': (context) =>
-            const Profile(), // Named route for profile screen
+        '/login': (context) => const Login(),
+        '/profile': (context) => const Profile(),
+        '/home': (context) => const Home(),
         '/camera': (context) => const Camera(),
-        '/home': (context) => Home(),
       },
-      initialRoute: '/login', // Set the initial route to the login screen
+      initialRoute: '/login',
     );
   }
 }

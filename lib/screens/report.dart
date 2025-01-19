@@ -24,11 +24,50 @@ class _ReportState extends State<Report> {
   // Controllers
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _streetController = TextEditingController();
-  final TextEditingController _barangayController = TextEditingController();
+  final TextEditingController _otherInfrastructureController =
+      TextEditingController();
+
+  // Hardcoded list of barangays
+  final List<String> _barangays = [
+    'Abella',
+    'Bagumbayan Norte',
+    'Bagumbayan Sur',
+    'Balatas',
+    'Calauag',
+    'Cararayan',
+    'Carolina',
+    'Concepcion Grande',
+    'Concepcion Pequeño',
+    'Dayangdang',
+    'Del Rosario',
+    'Dinaga',
+    'Igualdad Interior',
+    'Lerma',
+    'Liboton',
+    'Mabolo',
+    'Pacol',
+    'Panicuason',
+    'Peñafrancia',
+    'Sabang',
+    'San Felipe',
+    'San Francisco (Pob.)',
+    'San Isidro',
+    'Santa Cruz',
+    'Tabuco',
+    'Tinago',
+    'Triangulo',
+  ];
+
+  // Hardcoded severity levels
+  final List<String> _severityLevels = ['Low', 'Medium', 'High'];
 
   // State Variables
   int? _selectedInfrastructure;
   int? _selectedIssue;
+  String? _selectedBarangay; // Selected barangay
+  String? _selectedSeverity; // Selected severity level
+  bool _isOtherInfrastructure = false;
+  String? _otherInfrastructureDescription;
   List<Map<String, dynamic>> _availableIssues = [];
   List<Map<String, dynamic>> _infrastructureTypes = [];
   LatLng? _selectedLocation;
@@ -44,7 +83,6 @@ class _ReportState extends State<Report> {
 
   Future<void> _fetchLocation() async {
     final location = Location();
-
     bool serviceEnabled = await location.serviceEnabled();
     if (!serviceEnabled) {
       serviceEnabled = await location.requestService();
@@ -57,7 +95,6 @@ class _ReportState extends State<Report> {
         return;
       }
     }
-
     PermissionStatus permissionGranted = await location.hasPermission();
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await location.requestPermission();
@@ -70,7 +107,6 @@ class _ReportState extends State<Report> {
         return;
       }
     }
-
     LocationData currentLocation = await location.getLocation();
     if (mounted) {
       setState(() {
@@ -87,8 +123,6 @@ class _ReportState extends State<Report> {
     if (mounted) {
       setState(() {
         _infrastructureTypes = response;
-        print(
-            'Fetched Infrastructure Types: $_infrastructureTypes'); // Debug print
       });
     }
   }
@@ -100,8 +134,9 @@ class _ReportState extends State<Report> {
       setState(() {
         _availableIssues = issues;
         _selectedIssue = null;
-        print(
-            'Fetched Issues for Infrastructure $infrastructureId: $_availableIssues'); // Debug print
+        _isOtherInfrastructure = _infrastructureTypes.any((type) =>
+            type['infrastructure_id'] == infrastructureId &&
+            type['infrastructure_type'] == 'Others...');
       });
     }
   }
@@ -115,7 +150,6 @@ class _ReportState extends State<Report> {
         ),
       ),
     );
-
     if (selected != null) {
       setState(() {
         _selectedLocation = selected;
@@ -132,7 +166,6 @@ class _ReportState extends State<Report> {
         builder: (context) => const Camera(),
       ),
     );
-
     if (imagePath != null) {
       setState(() {
         _imageFile = File(imagePath);
@@ -157,33 +190,61 @@ class _ReportState extends State<Report> {
   }
 
   void _submitReport() async {
+    // Check for missing required fields
+    if (_imageFile == null) {
+      _showMissingFieldMessage("Photo");
+      return;
+    }
+    if (_selectedInfrastructure == null) {
+      _showMissingFieldMessage("Infrastructure Type");
+      return;
+    }
+    if (_isOtherInfrastructure &&
+        (_otherInfrastructureController.text.isEmpty)) {
+      _showMissingFieldMessage("Other Infrastructure Type");
+      return;
+    }
+    if (_selectedSeverity == null) {
+      _showMissingFieldMessage("Severity Level");
+      return;
+    }
+    if (_streetController.text.isEmpty) {
+      _showMissingFieldMessage("Street");
+      return;
+    }
+    if (_selectedBarangay == null) {
+      _showMissingFieldMessage("Barangay");
+      return;
+    }
+    if (_selectedLocation == null) {
+      _showMissingFieldMessage("Location");
+      return;
+    }
+
     String? base64Image = await _convertImageToBase64(_imageFile);
 
-    if (_selectedInfrastructure != null &&
-        _selectedIssue != null &&
-        _selectedLocation != null &&
-        _streetController.text.isNotEmpty &&
-        _barangayController.text.isNotEmpty) {
-      final data = {
-        'resident_id': currentUser['resident_id'],
-        'infrastructure_id': _selectedInfrastructure,
-        'issue_id': _selectedIssue,
-        'description': _descriptionController.text,
-        'latitude': _selectedLocation!.latitude.toString(),
-        'longitude': _selectedLocation!.longitude.toString(),
-        'street': _streetController.text,
-        'barangay': _barangayController.text,
-        'reportPhoto': base64Image,
-      };
+    final data = {
+      'resident_id': currentUser['resident_id'],
+      'infrastructure_id': _selectedInfrastructure,
+      'issue_id': _isOtherInfrastructure ? null : _selectedIssue,
+      'severityLevel': _selectedSeverity,
+      'description': _descriptionController.text,
+      'latitude': _selectedLocation!.latitude.toString(),
+      'longitude': _selectedLocation!.longitude.toString(),
+      'street': _streetController.text,
+      'barangay': _selectedBarangay,
+      'reportPhoto': base64Image,
+      'other_infrastructure':
+          _isOtherInfrastructure ? _otherInfrastructureController.text : null,
+    };
 
+    try {
       final response = await DataService.submitReport(data);
-
       if (response['status'] == 'success') {
         Fluttertoast.showToast(
           msg: "Report successfully submitted!",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
           backgroundColor: Colors.green,
           textColor: Colors.white,
           fontSize: 16.0,
@@ -198,15 +259,25 @@ class _ReportState extends State<Report> {
           textColor: Colors.white,
         );
       }
-    } else {
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: "Please complete all fields before submitting!",
+        msg: 'Error submitting report: $e',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
     }
+  }
+
+  void _showMissingFieldMessage(String fieldName) {
+    Fluttertoast.showToast(
+      msg: "$fieldName is required.",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
   }
 
   @override
@@ -221,13 +292,6 @@ class _ReportState extends State<Report> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField(
-                "Description", _descriptionController, "Describe the issue"),
-            const SizedBox(height: 16),
-            _buildTextField("Street", _streetController, "Enter street name"),
-            const SizedBox(height: 16),
-            _buildTextField("Barangay", _barangayController, "Enter barangay"),
-            const SizedBox(height: 16),
             _buildDropdown<int>(
               label: "Select Infrastructure Type",
               value: _selectedInfrastructure,
@@ -242,16 +306,51 @@ class _ReportState extends State<Report> {
               displayKey: 'infrastructure_type',
             ),
             const SizedBox(height: 16),
-            _buildDropdown<int>(
-              label: "Select Issue Type",
-              value: _selectedIssue,
-              items: _availableIssues,
+            if (!_isOtherInfrastructure)
+              _buildDropdown<int>(
+                label: "Select Issue Type",
+                value: _selectedIssue,
+                items: _availableIssues,
+                onChanged: (value) {
+                  setState(() => _selectedIssue = value);
+                },
+                valueKey: 'issue_id',
+                displayKey: 'issue_type',
+              ),
+            if (_isOtherInfrastructure)
+              _buildTextField("Other Infrastructure Type",
+                  _otherInfrastructureController, "Enter type"),
+            const SizedBox(height: 16),
+            _buildDropdown<String>(
+              label: "Severity Level",
+              value: _selectedSeverity,
+              items: _severityLevels
+                  .map((level) => {'value': level, 'display': level})
+                  .toList(),
               onChanged: (value) {
-                setState(() => _selectedIssue = value);
+                setState(() => _selectedSeverity = value);
               },
-              valueKey: 'issue_id',
-              displayKey: 'issue_type',
+              valueKey: 'value',
+              displayKey: 'display',
             ),
+            const SizedBox(height: 16),
+            _buildTextField("Street", _streetController, "Enter street name"),
+            const SizedBox(height: 16),
+            _buildDropdown<String>(
+              label: "Barangay",
+              value: _selectedBarangay,
+              items: _barangays
+                  .map((barangay) => {'value': barangay, 'display': barangay})
+                  .toList(),
+              onChanged: (value) {
+                setState(() => _selectedBarangay = value);
+              },
+              valueKey: 'value',
+              displayKey: 'display',
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+                "Description", _descriptionController, "Describe the issue"),
             const SizedBox(height: 16),
             GestureDetector(
               onTap: _openMap,
@@ -293,12 +392,12 @@ class _ReportState extends State<Report> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           decoration: InputDecoration(
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
             hintText: hint,
           ),
         ),
@@ -311,8 +410,8 @@ class _ReportState extends State<Report> {
     required T? value,
     required List<Map<String, dynamic>> items,
     required ValueChanged<T?> onChanged,
-    required String valueKey, // Key for dropdown value
-    required String displayKey, // Key for dropdown label
+    required String valueKey,
+    required String displayKey,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,7 +423,7 @@ class _ReportState extends State<Report> {
           items: items.map((item) {
             return DropdownMenuItem<T>(
               value: item[valueKey] as T,
-              child: Text(item[displayKey].toString()), // Display text
+              child: Text(item[displayKey].toString()),
             );
           }).toList(),
           onChanged: onChanged,
