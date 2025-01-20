@@ -23,7 +23,6 @@ class _NotificationsState extends State<Notifications> {
   // Fetch notifications from the backend
   Future<void> _fetchNotifications() async {
     try {
-      // Safely parse resident_id
       final int residentId = int.parse(currentUser['resident_id'].toString());
       final fetchedNotifications =
           await DataService.getNotifications(residentId);
@@ -39,6 +38,40 @@ class _NotificationsState extends State<Notifications> {
         isLoading = false;
       });
       print("Error fetching notifications: $e");
+    }
+  }
+
+  // Method to handle feedback submission
+  Future<void> _submitFeedback(int reportId, String comment) async {
+    try {
+      final response = await DataService.submitFeedback({
+        'report_id': reportId,
+        'comment': comment,
+      });
+
+      if (response['status'] == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Feedback submitted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to submit feedback.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error submitting feedback: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('An error occurred while submitting feedback.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -61,7 +94,6 @@ class _NotificationsState extends State<Notifications> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            // Logo and Title
             Column(
               children: [
                 Image.asset(
@@ -109,6 +141,7 @@ class _NotificationsState extends State<Notifications> {
                                     notification["message"] ?? "",
                                     notification["date_received"] ?? "",
                                     notification["time_received"] ?? "",
+                                    notification["report_id"] ?? 0,
                                   ),
                                   const SizedBox(height: 5),
                                 ],
@@ -123,8 +156,8 @@ class _NotificationsState extends State<Notifications> {
     );
   }
 
-  Widget _buildNotificationCard(
-      BuildContext context, String message, String date, String time) {
+  Widget _buildNotificationCard(BuildContext context, String message,
+      String date, String time, int reportId) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -169,8 +202,59 @@ class _NotificationsState extends State<Notifications> {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          if (message.contains(
+              "resolved")) // Show feedback button for resolved messages
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: () {
+                  _showFeedbackDialog(reportId);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                ),
+                child: const Text("Write Feedback"),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  // Dialog for submitting feedback
+  void _showFeedbackDialog(int reportId) {
+    final TextEditingController feedbackController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Submit Feedback"),
+          content: TextField(
+            controller: feedbackController,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: "Write your feedback here...",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                _submitFeedback(reportId, feedbackController.text);
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

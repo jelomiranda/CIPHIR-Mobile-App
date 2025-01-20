@@ -168,4 +168,29 @@ class DataService {
       return {"status": "error", "message": e.toString()};
     }
   }
+
+  // Method to submit feedback
+  static Future<Map<String, dynamic>> submitFeedback(
+      Map<String, dynamic> feedbackData) async {
+    final String url = '$baseUrl/submit_feedback.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(feedbackData),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData;
+      } else {
+        print('Failed to submit feedback. Response: ${response.body}');
+        return {"status": "error", "message": response.body};
+      }
+    } catch (e) {
+      print('Error submitting feedback: $e');
+      return {"status": "error", "message": e.toString()};
+    }
+  }
 }

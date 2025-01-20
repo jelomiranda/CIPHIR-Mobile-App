@@ -1,6 +1,7 @@
 import 'package:ciphir_mobile/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:ciphir_mobile/backend/SignupService.dart'; // Import the SignupService
+import 'login.dart'; // Import the Login screen
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -60,6 +61,12 @@ class _SignupState extends State<Signup> {
             margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
+        );
+
+        // Redirect to the login screen after successful signup
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Login()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
