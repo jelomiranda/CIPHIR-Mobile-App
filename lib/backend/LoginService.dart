@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-
 // Global variable to store user data
 Map<String, dynamic> currentUser = {};
 
@@ -11,7 +10,7 @@ class LoginService {
 
   // Login method to authenticate users via the PHP endpoint
   Future<bool> login(String username, String password) async {
-    final String url = '$baseUrl/login.php';
+    final String url = '$baseUrl/Flutter/login.php';
 
     try {
       final response = await http.post(
@@ -57,7 +56,7 @@ class LoginService {
   // Method to update user information
   Future<bool> updateUserInfo(Map<String, dynamic> updatedInfo) async {
     final String url =
-        '$baseUrl/update_user.php'; // Assuming you have this endpoint
+        '$baseUrl/Flutter/update_user.php'; // Assuming you have this endpoint
 
     try {
       final response = await http.post(
@@ -87,7 +86,7 @@ class LoginService {
   // Method to change password
   Future<bool> changePassword(String oldPassword, String newPassword) async {
     final String url =
-        '$baseUrl/change_password.php'; // Assuming you have this endpoint
+        '$baseUrl/Flutter/change_password.php'; // Assuming you have this endpoint
 
     try {
       final response = await http.post(

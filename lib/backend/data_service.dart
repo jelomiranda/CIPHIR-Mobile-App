@@ -8,7 +8,7 @@ class DataService {
   // Method to fetch infrastructure types
   static Future<List<Map<String, dynamic>>> getInfrastructureTypes() async {
     try {
-      final String url = '$baseUrl/get_infrastructure_types.php';
+      final String url = '$baseUrl/Flutter/get_infrastructure_types.php';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -31,7 +31,7 @@ class DataService {
   static Future<List<Map<String, dynamic>>> getIssuesForInfrastructure(
       int infrastructureId) async {
     try {
-      final String url = '$baseUrl/get_issues_for_infrastructure.php';
+      final String url = '$baseUrl/Flutter/get_issues_for_infrastructure.php';
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
@@ -57,7 +57,7 @@ class DataService {
   // Method to fetch report history
   static Future<List<Map<String, dynamic>>> getReportHistory(
       int residentId) async {
-    final String url = '$baseUrl/get_report_history.php';
+    final String url = '$baseUrl/Flutter/get_report_history.php';
 
     try {
       final response = await http.post(
@@ -89,7 +89,7 @@ class DataService {
   // Method to submit a report
   static Future<Map<String, dynamic>> submitReport(
       Map<String, dynamic> data) async {
-    final String url = '$baseUrl/report_issue.php';
+    final String url = '$baseUrl/Flutter/report_issue.php';
 
     try {
       final response = await http.post(
@@ -116,7 +116,7 @@ class DataService {
   // Method to fetch notifications for a resident
   static Future<List<Map<String, dynamic>>> getNotifications(
       int residentId) async {
-    final String url = '$baseUrl/get_notifications.php';
+    final String url = '$baseUrl/Flutter/get_notifications.php';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -146,7 +146,7 @@ class DataService {
   // Method to mark a notification as read
   static Future<Map<String, dynamic>> markNotificationAsRead(
       int notificationId) async {
-    final String url = '$baseUrl/mark_notification_as_read.php';
+    final String url = '$baseUrl/Flutter/mark_notification_as_read.php';
 
     try {
       final response = await http.post(
@@ -172,7 +172,7 @@ class DataService {
   // Method to submit feedback
   static Future<Map<String, dynamic>> submitFeedback(
       Map<String, dynamic> feedbackData) async {
-    final String url = '$baseUrl/submit_feedback.php';
+    final String url = '$baseUrl/Flutter/submit_feedback.php';
 
     try {
       final response = await http.post(
